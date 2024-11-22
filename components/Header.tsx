@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ModeToggle } from "./modeToggle";
 import { Button } from "./ui/button";
 import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
+
 export default function Header()
 {
     return(
