@@ -13,7 +13,7 @@ export default function Home() {
             <p className="text-gray-200 text-xl">
               Opens: 9AM to 5PM
             </p>
-            <Link href="/home">
+            <Link href="/login">
               <Button className="w-32 h-12 text-lg mt-4 bg-white/10 hover:bg-white/20 text-white transition-all duration-300">
                 Enter
               </Button>
