@@ -1,15 +1,20 @@
+export const metadata={
+    title:"Customers"
+}
 import BackButton from "@/components/backButton";
 import getCustomer from "@/lib/hooks/getCustomer";
+import CustomerFormPage from "./customerPageform";
 
-export default async function Form(
+export default async function Customer(
     {searchParams}:
     {searchParams : 
         Promise< {[key:string] : string |undefined }>
     })
 {
+    try{
     const {customerId} = await searchParams;
     if(customerId)
-    {    
+    {    // Edit form
         const customer = await getCustomer(parseInt(customerId));
         if(!customer)
         {
@@ -26,10 +31,20 @@ export default async function Form(
                 </div>
             )
         }
+        else
+        {
+           return <CustomerFormPage customer={customer}/>
+        }
         console.log(customer);
     }
     else
     {
-
+        // new customer:
+       return <CustomerFormPage/>
     }
+}
+catch(error)
+{
+    console.log(error);
+}   
 }

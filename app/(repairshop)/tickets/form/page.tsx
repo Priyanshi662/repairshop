@@ -1,6 +1,7 @@
 import BackButton from "@/components/backButton";
 import getCustomer from "@/lib/hooks/getCustomer";
 import getTicket from "@/lib/hooks/getTickets";
+import TicketForm from "./ticketPageForm";
 
 export default async function Form(
     {searchParams}:
@@ -10,7 +11,7 @@ export default async function Form(
 {
     try{
         const {customerId, ticketId}= await searchParams;
-        if(!customerId || !ticketId)
+        if(!customerId && !ticketId)
         {
             return(
                 <div className="flex flex-col items-center justify-center mt-20">
@@ -29,6 +30,20 @@ export default async function Form(
             if(customerId)
             {
                 const customer= await getCustomer(parseInt(customerId));
+                if(!customer){
+                    return(
+                        <div>
+                            <h2>
+                                Customer ID # ${customerId} not Found
+                            </h2>
+                            <BackButton 
+                            title="Go Back" 
+                            variant="default"
+                            className="p-4 h-4 w-20"
+                            />
+                        </div>
+                    )
+                }
                 if(!customer.active)
                 {   
                     return(
@@ -44,7 +59,7 @@ export default async function Form(
                         </div>
                     )
                 }
-                console.log(customer);
+                return <TicketForm customer={customer}/>
             }
         }
         if(ticketId)
@@ -66,8 +81,7 @@ export default async function Form(
                 )
             }
             const customer= await getCustomer(ticket.customerId);
-            console.log("Ticket  : ",ticket);
-            console.log("Customer  : ",customer);
+            return <TicketForm customer={customer} ticket={ticket}/>
         }
     }
     catch(e)
