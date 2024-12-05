@@ -22,7 +22,8 @@ import { INDIAN_STATES } from "@/constants/states";
     zipcode: (schema) => schema.zipcode
       .regex(/^[1-9][0-9]{5}$/, "Invalid Pin Code"),
       
-    state: (schema) => schema.state.refine((val) => INDIAN_STATES.map((item)=>(val===item.description)), "Invalid state")
+    state: (schema) => schema.state
+      .refine((val) => INDIAN_STATES.map((item)=>(val===item.description)), "Invalid state")
   });
 
 export const customerSelectSchema=createSelectSchema(customers);

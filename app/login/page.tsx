@@ -7,7 +7,7 @@ export default function Login(){
             <div>
                 <h1>Repair shop</h1>
                 <Button asChild>
-                    <LoginLink>Sign Up</LoginLink>
+                    <LoginLink>Sign in</LoginLink>
                 </Button>
             </div>
         </main>

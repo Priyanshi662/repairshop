@@ -1,15 +1,26 @@
 "use client"
 import { customerSelectType } from "@/app/schemas/customers";
 import { ticketInsertSchema, ticketInsertType, ticketSelectType } from "@/app/schemas/tickets";
+import CheckBoxWithLabel from "@/components/inputs/CheckboxWithLabel";
+import InputWithLabel from "@/components/inputs/InputWithLabel";
+import SelectWithLabel from "@/components/inputs/SelectWithLabel";
+import TextAreaWithLabel from "@/components/inputs/TextAreaWithLabel";
+import { Button } from "@/components/ui/button";
+import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
 type props=
 {
     customer: customerSelectType,
-    ticket?: ticketSelectType
+    ticket?: ticketSelectType,
+    techs?:{
+        id:string,
+        description:string
+    }[],
+    isEditable?: boolean
 }
-export default function TicketForm({customer,ticket}:props)
+export default function TicketForm({customer,ticket,techs,isEditable=true}:props)
 {
     const defaultValues :ticketInsertType={
         id : ticket?.id ?? '(New)',
@@ -17,8 +28,9 @@ export default function TicketForm({customer,ticket}:props)
         title: ticket?.title ?? "",
         description: ticket?.description ?? "",
         completed: ticket?.completed ?? false,
-        tech : ticket?.tech ?? ""
+        tech : ticket?.tech ?? "new-ticket@example.com"
     };
+    const isManager= Array.isArray(techs);
     const myform = useForm<ticketInsertType>({
         mode:"onBlur",
         resolver: zodResolver(ticketInsertSchema),
@@ -30,16 +42,95 @@ export default function TicketForm({customer,ticket}:props)
     }
     return(
         <div>
-            <div className="mb-6">
+            <div className="m-4">
                 <h2 className="text-2xl font-bold">
-                    {ticket?.id? ("Edit") : ("New")}
-                        Ticket 
-                    {ticket?.id ? `# ${ticket.id}` : "Form"}
+                    {
+                        (ticket?.id && isEditable)?
+                            (`Edit Ticket #${ticket.id}`):
+                            ( ticket?.id? 
+                            `View Ticket #${ticket.id}`:
+                            "Create New Ticket"
+                            )
+                    }
                 </h2>
             </div>
             <Form {...myform}>
-                    <form onSubmit={myform.handleSubmit(submitForm)}>
-                        <p>{JSON.stringify(myform.getValues())}</p>
+                    <form onSubmit={myform.handleSubmit(submitForm)}
+                    className="flex flex-row w-full gap-4"
+                    >
+                            <div className="flex flex-col p-4 gap-4 w-full max-w-xs">
+                            
+                            <div className=" mt-4 space-y-2">
+                                <h3>Customer Info</h3>
+                                <hr className="w-4/5"/>
+                                <p>{customer.firstname} {customer.lastname}</p>
+                                <p>{customer.address1}</p>
+                                {customer.address2? <p>{customer.address2}</p>: null}
+                                <p>{customer.city}, {customer.state} - {customer.zipcode}</p>
+                                <hr className="w-4/5"/>
+                                <p>{customer.email}</p>
+                                <p>Phone:  {customer.phone}</p>
+                            </div>
+                            </div>
+                            
+                            <div className="flex flex-col p-4 gap-4 w-full max-w-xs">
+                            <InputWithLabel<ticketInsertType>
+                                fieldTitle="Title"
+                                nameInSchema="title"
+                                disabled={!isEditable}
+                            />
+                           {
+                            isManager?
+                            (
+                                <SelectWithLabel
+                                    fieldTitle="Tech ID"
+                                    nameInSchema="tech"
+                                    data={[{id:"new-ticket@example.com",description:"new-ticket@example.com"},...techs!]}
+                                />
+                            )
+                            :
+                            (
+                                <InputWithLabel<ticketInsertType>
+                                fieldTitle="Tech"
+                                nameInSchema="tech"
+                                disabled={isEditable}
+                            />
+                            )
+                           }
+                           {
+                            ticket?.id?(
+                            <CheckBoxWithLabel<ticketInsertType>
+                                nameInSchema="completed"
+                                fieldTitle="Status"
+                                message="completed"
+                                disabled={!isEditable}
+                            />)
+                            :
+                            null
+                            }
+                                <TextAreaWithLabel<ticketInsertType>
+                                    fieldTitle="Description"
+                                    nameInSchema="description"
+                                    className="h-32"
+                                    disabled={!isEditable}
+                                />
+                                {
+                                    isEditable?
+                                 (<div className="flex flex-row gap-2">
+                                    <Button type="submit" variant="default" title="Save" className="w-3/4">
+                                        Save
+                                    </Button>
+                                    <Button type="button" variant="destructive" 
+                                        title="Reset" className="w-full" 
+                                        onClick={()=> myform.reset(defaultValues)}
+                                    >
+                                        Reset
+                                    </Button>
+                                </div>)
+                                :
+                                null
+                                }
+                            </div>
                     </form>
                 </Form>
         </div>
