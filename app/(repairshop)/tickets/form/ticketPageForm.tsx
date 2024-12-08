@@ -9,6 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import {useAction} from "next-safe-action/hooks";
+import { saveTicketAction } from "@/app/actions/saveTicketAction";
+import { DisplayServerActionResponse } from "@/components/displayServerActionResponse";
+import { LoaderCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 type props=
 {
@@ -22,6 +27,28 @@ type props=
 }
 export default function TicketForm({customer,ticket,techs,isEditable=true}:props)
 {
+    const {toast}= useToast();
+    const {execute,result, isPending, reset}= useAction(saveTicketAction,{
+        onSuccess({data}){
+            if(data?.message)
+           { 
+            toast({
+                title:"Saved Successfully",
+                description:data.message,
+                variant:"default"
+            })
+        }
+        },
+        onError({error}){
+            toast({
+                title:"Error!",
+                description:"Ticket could not be created",
+                variant:"destructive"
+            })
+        }
+    })
+    ;
+
     const defaultValues :ticketInsertType={
         id : ticket?.id ?? '(New)',
         customerId: customer.id ?? 0,
@@ -38,11 +65,13 @@ export default function TicketForm({customer,ticket,techs,isEditable=true}:props
     })
 
     async function submitForm(data: ticketInsertType){
-        console.log(data)
+        execute(data);
     }
+
     return(
         <div>
             <div className="m-4">
+                <DisplayServerActionResponse result={result}/>
                 <h2 className="text-2xl font-bold">
                     {
                         (ticket?.id && isEditable)?
@@ -93,7 +122,7 @@ export default function TicketForm({customer,ticket,techs,isEditable=true}:props
                                 <InputWithLabel<ticketInsertType>
                                 fieldTitle="Tech"
                                 nameInSchema="tech"
-                                disabled={isEditable}
+                                disabled={true}
                             />
                             )
                            }
@@ -117,12 +146,17 @@ export default function TicketForm({customer,ticket,techs,isEditable=true}:props
                                 {
                                     isEditable?
                                  (<div className="flex flex-row gap-2">
-                                    <Button type="submit" variant="default" title="Save" className="w-3/4">
-                                        Save
+                                    <Button type="submit" variant="default" title="Save" className="w-3/4" disabled={isPending}>
+                                        {
+                                            isPending? <><LoaderCircle className="animate-spin"/>Loading..</>: "Save"
+                                        }
                                     </Button>
                                     <Button type="button" variant="destructive" 
                                         title="Reset" className="w-full" 
-                                        onClick={()=> myform.reset(defaultValues)}
+                                        onClick={()=> {
+                                            myform.reset(defaultValues)
+                                            reset()
+                                        } }
                                     >
                                         Reset
                                     </Button>

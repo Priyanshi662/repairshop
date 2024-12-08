@@ -11,6 +11,11 @@ import SelectWithLabel from "@/components/inputs/SelectWithLabel";
 import { INDIAN_STATES } from "@/constants/states";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs"
 import CheckBoxWithLabel from "@/components/inputs/CheckboxWithLabel";
+import { useAction } from "next-safe-action/hooks";
+import { saveCustomerAction } from "@/app/actions/saveCustomerAction";
+import { useToast } from "@/hooks/use-toast";
+import { LoaderCircle } from "lucide-react";
+import { DisplayServerActionResponse } from "@/components/displayServerActionResponse";
 
 type Props= {
     customer?: customerSelectType
@@ -18,7 +23,8 @@ type Props= {
 export default function CustomerFormPage({customer}:Props){
     const {getPermission,isLoading}= useKindeBrowserClient();
     const isManager= !isLoading && getPermission('manager')?.isGranted;
-    
+    const {toast}=useToast();
+
     const defaultValues: customerInsertType ={
         firstname : customer?.firstname ?? "",
         lastname  : customer?.lastname ?? "",
@@ -41,14 +47,32 @@ export default function CustomerFormPage({customer}:Props){
         }
     );
 
+    const {execute,result,isPending,reset} = useAction(saveCustomerAction,{
+        onSuccess({data}){
+            toast({
+                title:result?.data?.message,
+                variant:"default",
+                description:data?.message
+            })
+        },
+        onError({error})
+        {
+            toast({
+                title:"Error",
+                variant:"destructive",
+                description:"Save Failed"
+            })
+        }
+    });
     async function submitForm(data : customerInsertType){
-        console.log(data);
+         execute(data);
     }
     useEffect(()=>{
         console.log(defaultValues);
     },[])
     return(
         <div className="flex flex-col gap-1 sm:px-8">
+            <DisplayServerActionResponse result={result} />
             <div className="mb-6">
                 <h2 className="text-2xl font-bold">
                 {customer?.id ?("Edit"): ("New")} Customer Form
@@ -104,7 +128,7 @@ export default function CustomerFormPage({customer}:Props){
                             nameInSchema="notes"
                             className="h-32"
                         />
-                        {isLoading? <p>Loading...</p> : (isManager?
+                        {isLoading? <p>Loading...</p> : (isManager && customer?.id ?
                             <CheckBoxWithLabel
                                 fieldTitle="Active"
                                 nameInSchema="active"
@@ -113,12 +137,24 @@ export default function CustomerFormPage({customer}:Props){
                             : null
                         )}
                         <div className="flex flex-row gap-2">
-                        <Button type="submit" variant="default" title="Save" className="w-3/4">
-                            Save
+                        <Button type="submit" variant="default" title="Save" className="w-3/4"
+                            disabled={isPending}
+                        >
+                            {
+                                isPending?
+                                <>
+                                    <LoaderCircle className="animate-spin"/> Saving
+                                </>
+                                :
+                                "Save"
+                            }
                         </Button>
                         <Button type="button" variant="destructive" 
                                 title="Reset" className="w-full" 
-                                onClick={()=> myform.reset(defaultValues)}
+                                onClick={()=> {
+                                    myform.reset(defaultValues)
+                                    reset()
+                                }}
                         >
                             Reset
                         </Button>
