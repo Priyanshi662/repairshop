@@ -1,5 +1,6 @@
 import getCustomersBySearch from "@/lib/queries/getCustomersBySearch";
 import CustomerSearch from "./customerSearchPage";
+import CustomerTable from "./customerTable";
 
 export const metadata={
     title:"Customer Search"
@@ -16,7 +17,7 @@ export default async function Customers(
         <div>
             <CustomerSearch/>
             <p>
-                {JSON.stringify(searchResults)}
+                <CustomerTable data={searchResults}/>
             </p>
         </div>
     )
