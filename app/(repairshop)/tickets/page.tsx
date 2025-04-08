@@ -1,6 +1,7 @@
 import getTicketBySearch from "@/lib/queries/getTicketsBySearch";
 import TicketSearch from "./ticketSearchPage";
 import getOpenTickets from "@/lib/queries/getOpenTickets";
+import TicketTable from "./ticketTable";
 
 export const metadata={
     title:"Ticket Search"
@@ -16,7 +17,12 @@ export default async function Tickets(
         return(
             <>
                 <TicketSearch/>
-                <p> {JSON.stringify(openTickets)}</p>
+                { 
+                    openTickets.length?
+                    <TicketTable data={openTickets}/>
+                    :
+                    null
+                }
             </>
         )
     }
@@ -24,7 +30,7 @@ export default async function Tickets(
     return(
         <div>
             <TicketSearch/>
-            {JSON.stringify(tickets)}
+            <TicketTable data={tickets}/>
         </div>
     )
 }
